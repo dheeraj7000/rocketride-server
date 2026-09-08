@@ -70,7 +70,8 @@ When enabled, the node:
 
 1. Generates a cryptographically secure nonce (CSPRNG) per execution cycle
 2. Wraps each question text and context document between `<<<UNTRUSTED_DATA_{nonce}>>>` and `<<<END_UNTRUSTED_DATA_{nonce}>>>` markers
-3. Appends a system prompt directive telling the LLM to treat fenced content as data-only
+3. Appends a `Security Directive` instruction to the question (`Question.instructions`) telling the
+   LLM to treat fenced content as data-only
 
 Nonce collision (nonce appearing in content) is handled by regeneration with up to 10 retries.
 

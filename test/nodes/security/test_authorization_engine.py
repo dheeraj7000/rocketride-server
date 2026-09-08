@@ -5,18 +5,18 @@
 
 """Property tests for the Authorization Engine (Properties 12-15)."""
 
-import pytest
-from hypothesis import given, settings, assume
+from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from trust_boundary.authorization_engine import AuthorizationEngine
-from trust_boundary.models import PermissionScope, HookAborted
+from trust_boundary.models import PermissionScope
 
 
 # ---------------------------------------------------------------------------
 # Property 12: Deny Precedence Over Allow
 # Validates: Requirements 6.2, 13.1, 13.2, 13.3
 # ---------------------------------------------------------------------------
+
 
 class TestDenyPrecedence:
     """Deny always takes precedence over allow regardless of order."""
@@ -33,7 +33,7 @@ class TestDenyPrecedence:
         )
         engine = AuthorizationEngine([scope])
         decision = engine.evaluate(tool_name, {}, 'agent1')
-        assert decision.allowed == False
+        assert not decision.allowed
         assert 'denied' in decision.reason.lower()
 
     def test_glob_deny_overrides_glob_allow(self):
@@ -47,16 +47,18 @@ class TestDenyPrecedence:
         engine = AuthorizationEngine([scope])
 
         # file_read allowed
-        assert engine.evaluate('file_read', {}, 'agent1').allowed == True
+        assert engine.evaluate('file_read', {}, 'agent1').allowed
         # file_delete denied
-        assert engine.evaluate('file_delete', {}, 'agent1').allowed == False
-        assert engine.evaluate('file_delete_all', {}, 'agent1').allowed == False
+        assert not engine.evaluate('file_delete', {}, 'agent1').allowed
+        assert not engine.evaluate('file_delete_all', {}, 'agent1').allowed
 
     def test_deny_in_any_scope_blocks(self):
         """If any applicable scope denies, the tool is blocked."""
         scopes = [
             PermissionScope(scope_id='permissive', allowed_tools=['*'], denied_tools=[], allowed_agents=['agent1']),
-            PermissionScope(scope_id='restrictive', allowed_tools=['*'], denied_tools=['dangerous_*'], allowed_agents=['agent1']),
+            PermissionScope(
+                scope_id='restrictive', allowed_tools=['*'], denied_tools=['dangerous_*'], allowed_agents=['agent1']
+            ),
         ]
         engine = AuthorizationEngine(scopes)
         # The first scope allows *, but second denies dangerous_*
@@ -64,13 +66,14 @@ class TestDenyPrecedence:
         # Note: evaluation stops at first scope that matches (permissive allows it)
         # This tests implementation order — first applicable scope wins
         # In our design the first scope has no deny match, so it allows
-        assert decision.allowed == True  # First scope allows since no deny match
+        assert decision.allowed  # First scope allows since no deny match
 
 
 # ---------------------------------------------------------------------------
 # Property 13: Default-Deny Enforcement
 # Validates: Requirements 6.4, 6.5
 # ---------------------------------------------------------------------------
+
 
 class TestDefaultDeny:
     """Unknown agents or unmatched tools are always denied."""
@@ -87,7 +90,7 @@ class TestDefaultDeny:
         )
         engine = AuthorizationEngine([scope])
         decision = engine.evaluate('any_tool', {}, agent_id)
-        assert decision.allowed == False
+        assert not decision.allowed
         assert decision.scope_id == '__default_deny__'
 
     @given(tool_name=st.from_regex(r'exotic_[a-z]{3,8}', fullmatch=True))
@@ -102,14 +105,14 @@ class TestDefaultDeny:
         )
         engine = AuthorizationEngine([scope])
         decision = engine.evaluate(tool_name, {}, 'agent1')
-        assert decision.allowed == False
+        assert not decision.allowed
         assert decision.scope_id == '__no_match__'
 
     def test_empty_scopes_denies_all(self):
         """With no scopes configured, all calls are denied."""
         engine = AuthorizationEngine([])
         decision = engine.evaluate('any_tool', {}, 'any_agent')
-        assert decision.allowed == False
+        assert not decision.allowed
         assert decision.scope_id == '__default_deny__'
 
 
@@ -117,6 +120,7 @@ class TestDefaultDeny:
 # Property 14: Rate Limit Monotonicity
 # Validates: Requirements 7.1, 7.2, 7.3, 7.4
 # ---------------------------------------------------------------------------
+
 
 class TestRateLimitMonotonicity:
     """Call counter increments monotonically; denies after limit reached."""
@@ -138,11 +142,11 @@ class TestRateLimitMonotonicity:
         # First `limit` calls should be allowed
         for i in range(limit):
             decision = engine.evaluate('tool', {}, 'agent1')
-            assert decision.allowed == True, f"Call {i+1} should be allowed"
+            assert decision.allowed, f'Call {i + 1} should be allowed'
 
         # Next call should be denied
         decision = engine.evaluate('tool', {}, 'agent1')
-        assert decision.allowed == False
+        assert not decision.allowed
         assert 'rate limit' in decision.reason.lower()
 
     def test_denied_calls_dont_increment_counter(self):
@@ -163,9 +167,9 @@ class TestRateLimitMonotonicity:
 
         # Allowed calls still have full budget
         for _ in range(3):
-            assert engine.evaluate('allowed_tool', {}, 'agent1').allowed == True
+            assert engine.evaluate('allowed_tool', {}, 'agent1').allowed
 
-        assert engine.evaluate('allowed_tool', {}, 'agent1').allowed == False
+        assert not engine.evaluate('allowed_tool', {}, 'agent1').allowed
 
     def test_zero_limit_means_unlimited(self):
         """max_calls_per_run=0 means no rate limiting."""
@@ -180,7 +184,7 @@ class TestRateLimitMonotonicity:
         engine.reset_counters()
 
         for _ in range(1000):
-            assert engine.evaluate('tool', {}, 'agent1').allowed == True
+            assert engine.evaluate('tool', {}, 'agent1').allowed
 
     def test_reset_counters_restores_budget(self):
         """reset_counters() restores full rate limit budget."""
@@ -196,16 +200,17 @@ class TestRateLimitMonotonicity:
 
         engine.evaluate('tool', {}, 'agent1')
         engine.evaluate('tool', {}, 'agent1')
-        assert engine.evaluate('tool', {}, 'agent1').allowed == False
+        assert not engine.evaluate('tool', {}, 'agent1').allowed
 
         engine.reset_counters()
-        assert engine.evaluate('tool', {}, 'agent1').allowed == True
+        assert engine.evaluate('tool', {}, 'agent1').allowed
 
 
 # ---------------------------------------------------------------------------
 # Property 15: Schema Validation Enforcement
 # Validates: Requirements 8.1, 8.2, 8.3
 # ---------------------------------------------------------------------------
+
 
 class TestSchemaValidation:
     """Tool args are validated against configured schema."""
@@ -227,7 +232,7 @@ class TestSchemaValidation:
         )
         engine = AuthorizationEngine([scope])
         decision = engine.evaluate('tool', {'target': 'valid'}, 'agent1')
-        assert decision.allowed == True
+        assert decision.allowed
 
     def test_invalid_args_denied(self):
         """Args not conforming to schema are denied."""
@@ -246,7 +251,7 @@ class TestSchemaValidation:
         )
         engine = AuthorizationEngine([scope])
         decision = engine.evaluate('tool', {'target': 123}, 'agent1')
-        assert decision.allowed == False
+        assert not decision.allowed
         assert 'schema' in decision.reason.lower() or 'string' in decision.reason.lower()
 
     def test_missing_required_field_denied(self):
@@ -264,7 +269,7 @@ class TestSchemaValidation:
         )
         engine = AuthorizationEngine([scope])
         decision = engine.evaluate('tool', {}, 'agent1')
-        assert decision.allowed == False
+        assert not decision.allowed
 
     def test_no_schema_skips_validation(self):
         """When require_args_schema is None, any args pass."""
@@ -277,4 +282,4 @@ class TestSchemaValidation:
         )
         engine = AuthorizationEngine([scope])
         decision = engine.evaluate('tool', {'anything': 'goes'}, 'agent1')
-        assert decision.allowed == True
+        assert decision.allowed

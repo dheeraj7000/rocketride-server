@@ -31,8 +31,8 @@ class RunLevelPolicy:
 
         if payload is None or (isinstance(payload, dict) and not payload):
             raise HookAborted(
-                reason="Payload is missing or empty",
-                source="TrustBoundaryEvaluationGate",
+                reason='Payload is missing or empty',
+                source='TrustBoundaryEvaluationGate',
             )
 
         if not self._jsonschema_available:
@@ -49,8 +49,8 @@ class RunLevelPolicy:
             jsonschema.Draft7Validator.check_schema(schema)
         except jsonschema.SchemaError as e:
             raise HookAborted(
-                reason=f"Configured payload_schema is malformed: {e.message}",
-                source="TrustBoundaryEvaluationGate",
+                reason=f'Configured payload_schema is malformed: {e.message}',
+                source='TrustBoundaryEvaluationGate',
             )
 
         # Strip unknown keys not in schema properties (recursive)
@@ -63,7 +63,7 @@ class RunLevelPolicy:
             path = '.'.join(str(p) for p in e.absolute_path) if e.absolute_path else '(root)'
             raise HookAborted(
                 reason=f"Payload schema violation at '{path}': {e.message}",
-                source="TrustBoundaryEvaluationGate",
+                source='TrustBoundaryEvaluationGate',
             )
 
         return sanitized

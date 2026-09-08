@@ -30,7 +30,6 @@ class IInstance(IInstanceBase):
         Primary filtering is done via lifecycle hooks (PRE_TOOL_CALL).
         In passthrough mode, all questions are forwarded with audit logging.
         """
-        config = self.IGlobal.config
         audit_logger = self.IGlobal.audit_logger
 
         if self.IGlobal.passthrough_mode:
@@ -83,7 +82,7 @@ class IInstance(IInstanceBase):
             if config.abort_on_unauthorized:
                 exc = HookAborted(
                     reason=decision.reason,
-                    source="TrustBoundaryEvaluationGate",
+                    source='TrustBoundaryEvaluationGate',
                 )
                 # Try to raise as HookAborted; wrap in RuntimeError as fallback
                 try:
@@ -92,8 +91,8 @@ class IInstance(IInstanceBase):
                     raise
             else:
                 warning(
-                    f"[TrustBoundary] Denied (non-blocking): {context.tool_name} "
-                    f"by {context.agent_id} — {decision.reason}"
+                    f'[TrustBoundary] Denied (non-blocking): {context.tool_name} '
+                    f'by {context.agent_id} — {decision.reason}'
                 )
 
     def enforce_run_policy(self, payload: dict) -> dict:
@@ -122,10 +121,10 @@ class IInstance(IInstanceBase):
 
             # Determine outcome for logging
             if sanitized == payload:
-                outcome = "accepted"
+                outcome = 'accepted'
                 stripped_keys = []
             else:
-                outcome = "modified"
+                outcome = 'modified'
                 stripped_keys = [k for k in payload if k not in sanitized] if isinstance(payload, dict) else []
 
             if audit_logger:
@@ -140,7 +139,7 @@ class IInstance(IInstanceBase):
         except HookAborted:
             if audit_logger:
                 audit_logger.log_run_policy(
-                    outcome="rejected",
+                    outcome='rejected',
                     stripped_keys=None,
                     evaluated_at=evaluated_at,
                 )

@@ -9,7 +9,7 @@ import logging
 from datetime import datetime, timezone
 from typing import List, Optional
 
-logger = logging.getLogger("rocketride.trust_boundary.audit")
+logger = logging.getLogger('rocketride.trust_boundary.audit')
 
 
 class AuditLogger:
@@ -37,10 +37,10 @@ class AuditLogger:
 
         ts = datetime.fromtimestamp(evaluated_at, tz=timezone.utc).isoformat()
         # Truncate reason to 500 chars
-        truncated_reason = reason[:500] if reason else ""
+        truncated_reason = reason[:500] if reason else ''
 
         logger.info(
-            "AUTH_DECISION | tool=%s | agent=%s | scope=%s | allowed=%s | reason=%s | at=%s",
+            'AUTH_DECISION | tool=%s | agent=%s | scope=%s | allowed=%s | reason=%s | at=%s',
             tool_name,
             agent_id,
             scope_id,
@@ -65,24 +65,24 @@ class AuditLogger:
         if not self.enabled:
             return
 
-        ts = datetime.fromtimestamp(evaluated_at, tz=timezone.utc).isoformat() if evaluated_at else "N/A"
-        keys_str = ", ".join(stripped_keys) if stripped_keys else "none"
+        ts = datetime.fromtimestamp(evaluated_at, tz=timezone.utc).isoformat() if evaluated_at else 'N/A'
+        keys_str = ', '.join(stripped_keys) if stripped_keys else 'none'
 
         logger.info(
-            "RUN_POLICY | outcome=%s | stripped_keys=%s | at=%s",
+            'RUN_POLICY | outcome=%s | stripped_keys=%s | at=%s',
             outcome,
             keys_str,
             ts,
         )
 
-    def log_passthrough(self, payload_id: str = "") -> None:
+    def log_passthrough(self, payload_id: str = '') -> None:
         """Log a passthrough event in degraded mode."""
         if not self.enabled:
             return
 
         ts = datetime.now(tz=timezone.utc).isoformat()
         logger.info(
-            "PASSTHROUGH | payload_id=%s | at=%s",
-            payload_id or "unknown",
+            'PASSTHROUGH | payload_id=%s | at=%s',
+            payload_id or 'unknown',
             ts,
         )

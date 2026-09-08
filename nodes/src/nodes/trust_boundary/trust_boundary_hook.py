@@ -9,20 +9,22 @@ This module provides the TrustBoundaryHook class that integrates with CrewAI's
 lifecycle interception system. It is only imported/used when CrewAI is available.
 """
 
-from .models import ToolCallHookContext, HookAborted
+from .models import ToolCallHookContext
 
 try:
     from crewai.security import on, InterceptionPoint
 except ImportError:
     # Stubs for environments without CrewAI
     class InterceptionPoint:
-        PRE_TOOL_CALL = "pre_tool_call"
-        EXECUTION_START = "execution_start"
+        PRE_TOOL_CALL = 'pre_tool_call'
+        EXECUTION_START = 'execution_start'
 
     def on(interception_point):
         """No-op decorator when CrewAI is not available."""
+
         def decorator(func):
             return func
+
         return decorator
 
 

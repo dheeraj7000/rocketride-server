@@ -11,6 +11,9 @@ from ai.common.schema import Question
 from .IGlobal import IGlobal
 from .nonce_fencer import SecurityError
 
+# Subtitle used for the nonce-fencing directive added to Question.instructions.
+SECURITY_DIRECTIVE_TITLE = 'Security Directive'
+
 
 class IInstance(IInstanceBase):
     IGlobal: IGlobal
@@ -67,23 +70,23 @@ class IInstance(IInstanceBase):
 
                 if policy == 'block':
                     for match in scan_result.matches:
-                        warning(
-                            f'[PreScreen] Blocked: {match.category} \u2014 {match.matched_text[:60]}'
-                        )
+                        warning(f'[PreScreen] Blocked: {match.category} \u2014 {match.matched_text[:60]}')
                     self.preventDefault()
                     return
                 elif policy == 'warn':
                     for match in scan_result.matches:
-                        warning(
-                            f'[PreScreen] Warning: {match.category} \u2014 {match.matched_text[:60]}'
-                        )
+                        warning(f'[PreScreen] Warning: {match.category} \u2014 {match.matched_text[:60]}')
                 elif policy == 'log':
                     import logging
+
                     logger = logging.getLogger('rocketride.input_prescreen')
                     for match in scan_result.matches:
                         logger.info(
                             '[PreScreen] Detected: category=%s, rule=%s, severity=%s, pos=%d',
-                            match.category, match.rule_id, match.severity, match.position,
+                            match.category,
+                            match.rule_id,
+                            match.severity,
+                            match.position,
                         )
 
         # Phase 2: Nonce fencing
@@ -109,16 +112,14 @@ class IInstance(IInstanceBase):
 
                 # Fence context/RAG documents
                 if question.context:
-                    question.context = [
-                        nonce_fencer.fence(ctx, nonce) for ctx in question.context
-                    ]
+                    question.context = [nonce_fencer.fence(ctx, nonce) for ctx in question.context]
 
-                # Inject system addendum
+                # Inject the security directive. Question has no free-form system
+                # field, so instructions are the system-level lane for it.
                 addendum = nonce_fencer.build_system_addendum(nonce)
-                if hasattr(question, 'system_addendum') and question.system_addendum:
-                    question.system_addendum += '\n' + addendum
-                else:
-                    question.system_addendum = addendum
+                if question.instructions is None:
+                    question.instructions = []
+                question.addInstruction(SECURITY_DIRECTIVE_TITLE, addendum)
 
             except SecurityError as e:
                 warning(f'[PreScreen] Nonce fencing failed: {e}; rejecting question')
@@ -177,25 +178,23 @@ class IInstance(IInstanceBase):
 
                 if policy == 'block':
                     for match in scan_result.matches:
-                        warning(
-                            f'[PreScreen] Document blocked: {match.category} '
-                            f'\u2014 {match.matched_text[:60]}'
-                        )
+                        warning(f'[PreScreen] Document blocked: {match.category} \u2014 {match.matched_text[:60]}')
                     self.preventDefault()
                     return
                 elif policy == 'warn':
                     for match in scan_result.matches:
-                        warning(
-                            f'[PreScreen] Document warning: {match.category} '
-                            f'\u2014 {match.matched_text[:60]}'
-                        )
+                        warning(f'[PreScreen] Document warning: {match.category} \u2014 {match.matched_text[:60]}')
                 elif policy == 'log':
                     import logging
+
                     logger = logging.getLogger('rocketride.input_prescreen')
                     for match in scan_result.matches:
                         logger.info(
                             '[PreScreen] Document detected: category=%s, rule=%s, severity=%s, pos=%d',
-                            match.category, match.rule_id, match.severity, match.position,
+                            match.category,
+                            match.rule_id,
+                            match.severity,
+                            match.position,
                         )
 
         # Nonce fencing on documents is handled when they appear as question context

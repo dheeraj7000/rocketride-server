@@ -19,7 +19,7 @@ class PermissionScope:
     allowed_agents: list  # Agent IDs or "*" for wildcard
     max_calls_per_run: int = 0  # 0 = unlimited
     require_args_schema: Optional[dict] = None  # JSON Schema draft-07
-    description: str = ""
+    description: str = ''
 
 
 @dataclass
@@ -39,8 +39,8 @@ class ToolCallHookContext:
     tool_name: str
     tool_args: dict
     agent_id: str
-    crew_id: str = ""
-    task_id: str = ""
+    crew_id: str = ''
+    task_id: str = ''
     call_index: int = 0
 
 

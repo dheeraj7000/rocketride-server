@@ -40,16 +40,13 @@ class AuthorizationEngine:
         evaluated_at = time.time()
 
         # Find applicable scopes for this agent
-        applicable_scopes = [
-            s for s in self.scopes
-            if agent_id in s.allowed_agents or "*" in s.allowed_agents
-        ]
+        applicable_scopes = [s for s in self.scopes if agent_id in s.allowed_agents or '*' in s.allowed_agents]
 
         if not applicable_scopes:
             return AuthDecision(
                 allowed=False,
                 reason=f"No permission scope covers agent '{agent_id}'",
-                scope_id="__default_deny__",
+                scope_id='__default_deny__',
                 evaluated_at=evaluated_at,
             )
 
@@ -74,8 +71,7 @@ class AuthorizationEngine:
                     return AuthDecision(
                         allowed=False,
                         reason=(
-                            f"Rate limit exceeded: {call_count}/{scope.max_calls_per_run} "
-                            f"in scope '{scope.scope_id}'"
+                            f"Rate limit exceeded: {call_count}/{scope.max_calls_per_run} in scope '{scope.scope_id}'"
                         ),
                         scope_id=scope.scope_id,
                         evaluated_at=evaluated_at,
@@ -96,7 +92,7 @@ class AuthorizationEngine:
             self._increment_call_count(scope.scope_id)
             return AuthDecision(
                 allowed=True,
-                reason="",
+                reason='',
                 scope_id=scope.scope_id,
                 evaluated_at=evaluated_at,
             )
@@ -104,7 +100,7 @@ class AuthorizationEngine:
         return AuthDecision(
             allowed=False,
             reason=f"No scope grants access to tool '{tool_name}' for agent '{agent_id}'",
-            scope_id="__no_match__",
+            scope_id='__no_match__',
             evaluated_at=evaluated_at,
         )
 
@@ -139,7 +135,8 @@ class AuthorizationEngine:
 
         try:
             jsonschema.validate(
-                args, schema,
+                args,
+                schema,
                 format_checker=jsonschema.FormatChecker(),
             )
         except jsonschema.ValidationError as e:

@@ -45,17 +45,6 @@ class ScanResult:
 
 
 @dataclass
-class FencedPayload:
-    """Output of nonce-fencing operation."""
-
-    nonce: str
-    fenced_text: str
-    system_addendum: str
-    original_length: int
-    fenced_length: int
-
-
-@dataclass
 class PreScreenConfig:
     """Static Input Pre-Screen .pipe configuration."""
 

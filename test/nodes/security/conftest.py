@@ -49,8 +49,10 @@ class _InterceptionPoint:
 
 def _on(interception_point):
     """Stub decorator that preserves the decorated method."""
+
     def decorator(func):
         return func
+
     return decorator
 
 
@@ -68,6 +70,7 @@ sys.modules.setdefault('crewai.security', crewai_security)
 
 # Add the nodes source path
 import pathlib
+
 _nodes_path = str(pathlib.Path(__file__).resolve().parents[3] / 'nodes' / 'src' / 'nodes')
 if _nodes_path not in sys.path:
     sys.path.insert(0, _nodes_path)

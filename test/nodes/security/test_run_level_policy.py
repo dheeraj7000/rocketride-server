@@ -18,6 +18,7 @@ from trust_boundary.models import HookAborted
 # Validates: Requirements 9.1, 9.2, 9.3
 # ---------------------------------------------------------------------------
 
+
 class TestRunLevelPolicySanitization:
     """Sanitized output only contains schema-defined keys; invalid payloads raise HookAborted."""
 
@@ -156,6 +157,7 @@ class TestRunLevelPolicySanitization:
 # Validates: Requirements 9.4, 9.5
 # ---------------------------------------------------------------------------
 
+
 class TestRunLevelPolicyPassthrough:
     """Payload passes through unmodified when policy disabled or no schema."""
 
@@ -189,15 +191,16 @@ class TestRunLevelPolicyPassthrough:
 # Validates: Requirements 10.1, 10.2
 # ---------------------------------------------------------------------------
 
+
 class TestAbortBehavior:
     """HookAborted carries the denial reason and source identifier."""
 
     def test_hook_aborted_has_reason_and_source(self):
         """HookAborted exception includes reason and source."""
-        exc = HookAborted(reason="Tool denied", source="TrustBoundaryEvaluationGate")
-        assert exc.reason == "Tool denied"
-        assert exc.source == "TrustBoundaryEvaluationGate"
-        assert "Tool denied" in str(exc)
+        exc = HookAborted(reason='Tool denied', source='TrustBoundaryEvaluationGate')
+        assert exc.reason == 'Tool denied'
+        assert exc.source == 'TrustBoundaryEvaluationGate'
+        assert 'Tool denied' in str(exc)
 
     def test_run_policy_abort_has_source(self):
         """Run-level policy HookAborted has correct source."""
@@ -205,4 +208,4 @@ class TestAbortBehavior:
         schema = {'type': 'object', 'properties': {'x': {'type': 'string'}}}
         with pytest.raises(HookAborted) as exc_info:
             policy.enforce({'x': 123}, schema=schema, enable_run_policy=True)
-        assert exc_info.value.source == "TrustBoundaryEvaluationGate"
+        assert exc_info.value.source == 'TrustBoundaryEvaluationGate'

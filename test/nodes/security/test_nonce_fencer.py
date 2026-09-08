@@ -17,9 +17,11 @@ from input_prescreen.nonce_fencer import NonceFencer, SecurityError
 # Validates: Requirements 3.2
 # ---------------------------------------------------------------------------
 
+
 class TestNonceFenceUnambiguity:
     """For any nonce and content where nonce not in content, fence() produces
-    exactly one open and one close marker."""
+    exactly one open and one close marker.
+    """
 
     @given(content=st.text(min_size=1, max_size=500))
     @settings(max_examples=200)
@@ -33,8 +35,8 @@ class TestNonceFenceUnambiguity:
 
         fenced = fencer.fence(content, nonce)
 
-        open_marker = f"<<<UNTRUSTED_DATA_{nonce}>>>"
-        close_marker = f"<<<END_UNTRUSTED_DATA_{nonce}>>>"
+        open_marker = f'<<<UNTRUSTED_DATA_{nonce}>>>'
+        close_marker = f'<<<END_UNTRUSTED_DATA_{nonce}>>>'
 
         assert fenced.count(open_marker) == 1
         assert fenced.count(close_marker) == 1
@@ -64,6 +66,7 @@ class TestNonceFenceUnambiguity:
 # Validates: Requirements 3.3
 # ---------------------------------------------------------------------------
 
+
 class TestNonceCollisionResolution:
     """After fence() completes, the nonce in markers does not appear in original content."""
 
@@ -85,6 +88,7 @@ class TestNonceCollisionResolution:
 
         # Extract the nonce from the opening marker
         import re
+
         match = re.search(r'<<<UNTRUSTED_DATA_([a-f0-9]+)>>>', fenced)
         assert match is not None
         used_nonce = match.group(1)
@@ -98,11 +102,11 @@ class TestNonceCollisionResolution:
         nonce = fencer.new_cycle()
 
         # Content containing the nonce
-        content = f"some text with {nonce} embedded"
+        content = f'some text with {nonce} embedded'
         fenced = fencer.fence(content, nonce)
 
         # The fence should succeed (regenerated nonce)
-        assert "<<<UNTRUSTED_DATA_" in fenced
+        assert '<<<UNTRUSTED_DATA_' in fenced
         assert content in fenced
 
 
@@ -110,6 +114,7 @@ class TestNonceCollisionResolution:
 # Property 8: Nonce Format Invariant
 # Validates: Requirements 3.1, 3.6
 # ---------------------------------------------------------------------------
+
 
 class TestNonceFormatInvariant:
     """Nonces are hex strings of exactly nonce_length * 2 characters."""
