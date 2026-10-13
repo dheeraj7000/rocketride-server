@@ -88,9 +88,9 @@ class IInstance(IInstanceBase):
             all_content.extend(q.text for q in question.questions if q.text)
         if question.context:
             all_content.extend(str(ctx) for ctx in question.context if ctx)
-        nonce = fencer.new_cycle(exclude='\n'.join(all_content))
 
         try:
+            nonce = fencer.new_cycle(exclude='\n'.join(all_content))
             if question.questions:
                 for item in question.questions:
                     if item.text:
