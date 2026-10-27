@@ -29,18 +29,13 @@ NonceFencer, SecurityError = _load_nonce_fencer()
 
 
 class TestConstruction:
-    """Nonce length validation at init time."""
+    """Nonce length configuration at init time."""
 
     def test_default_length(self):
         assert NonceFencer().nonce_length == 16
 
     def test_custom_length(self):
         assert NonceFencer(nonce_length=32).nonce_length == 32
-
-    @pytest.mark.parametrize('invalid_length', [8, 15, 16.5, True, '16'])
-    def test_invalid_length_rejected(self, invalid_length):
-        with pytest.raises(ValueError, match='nonce_length must be an integer'):
-            NonceFencer(nonce_length=invalid_length)
 
     def test_boundary_length_accepted(self):
         assert NonceFencer(nonce_length=16).nonce_length == 16

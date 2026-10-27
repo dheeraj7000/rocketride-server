@@ -14,16 +14,11 @@ class NonceFencer:
     MAX_COLLISION_RETRIES = 10
 
     def __init__(self, nonce_length: int = 16) -> None:
-        """Initialize a fencer.
+        """Initialize a fencer with its configured nonce size.
 
         Args:
             nonce_length: Nonce size in bytes.
-
-        Raises:
-            ValueError: If the nonce length is less than 16 bytes.
         """
-        if not isinstance(nonce_length, int) or isinstance(nonce_length, bool) or nonce_length < 16:
-            raise ValueError(f'nonce_length must be an integer >= 16, got {nonce_length!r}')
         self.nonce_length = nonce_length
 
     @staticmethod
@@ -50,9 +45,7 @@ class NonceFencer:
             nonce = secrets.token_hex(self.nonce_length)
             if nonce not in exclude:
                 return nonce
-        raise SecurityError(
-            f'Generated nonce was found in content after {self.MAX_COLLISION_RETRIES + 1} attempts'
-        )
+        raise SecurityError(f'Generated nonce was found in content after {self.MAX_COLLISION_RETRIES + 1} attempts')
 
     def fence(self, content: str, nonce: str) -> str:
         """Wrap content between nonce-delimited markers.
